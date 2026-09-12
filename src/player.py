@@ -1,11 +1,14 @@
+from mazegenerator import MazeGenerator
+
 class Player:
-    def __init__(self, maze: MazeGenerator, start: tuple(int, int) = (0, 0)):
+    def __init__(self, maze: MazeGenerator, start: tuple = (0, 0)):
         self.start = start
         self.maze = maze
         self.grid = maze.maze
         self.pos = start
+        self.score = 0
 
-    def can_move(
+    def move(
         self,
         curr_pos: tuple[int, int],
         new_pos: tuple[int, int],
@@ -36,4 +39,5 @@ class Player:
             # RIGHT
             if self.grid[curr_pos[1]][curr_pos[0]] & WALL_E:
                 return False
+        self.pos = new_pos
         return True

@@ -1,46 +1,43 @@
-from drawing.draw_stuff import draw_player
-from mazegenerator import MazeGenerator
-from maze_renderer import MazeRenderer
-from player import Player
+from config import GameConfig
 import pygame
+from mazegenerator import MazeGenerator
+from pac_gum import PacGum
+from player import Player
+from renderer import Renderer
 
 
 class Engine:
-    def __init__(self, m_height: int = 20, m_width: int = 20) -> None:
-        self.maze_gen = MazeGenerator((m_height, m_width))
-        self.maze_renderer = MazeRenderer(self.maze_gen, 1, 20, 1)
+    def __init__(self, config: GameConfig) -> None:
+        self.maze_gen = MazeGenerator((config.height, config.width))
+        self.renderer = Renderer(config)
         self.player = Player(self.maze_gen, (0, 0))
+        self.pac_gum = PacGum(self.maze_gen)
         self.running = True
 
-    def key_handler(self, keycode: int) -> int:
+    def move_handler(self, keycode: int) -> int:
         """
-        Handle the key pressed on the keyboard
-        Dispatch the action to the right fuction
+        Gère les entrées clavier pour bouger le joueur.
         """
-        row, col = self.player.pos
-        next_row, next_col = row, col
+        col, row = self.player.pos
+        next_col, next_row = col, row
 
         match keycode:
             case pygame.K_w | pygame.K_UP:
-                next_col -= 1
+                next_row -= 1  # Haut = on monte dans les lignes (Y)
             case pygame.K_s | pygame.K_DOWN:
-                next_col += 1
+                next_row += 1  # Bas = on descend dans les lignes (Y)
             case pygame.K_a | pygame.K_LEFT:
-                next_row -= 1
+                next_col -= 1  # Gauche = on diminue les colonnes (X)
             case pygame.K_d | pygame.K_RIGHT:
-                next_row += 1
-        if (next_row, next_col) == (row, col):
+                next_col += 1  # Droite = on augmente les colonnes (X)
+        if (next_col, next_row) == (col, row):
             return 1
-        if self.player.can_move((row, col), (next_row, next_col)):
-            self.player.pos = (next_row, next_col)
+        if self.player.move((col, row), (next_col, next_row)):
+            return 0
         return 0
 
     def run(self):
-
-        pygame.init()
-
-        screen = pygame.display.set_mode((1200, 800))
-        screen.fill((0, 0, 0))
+        self.renderer.create_static_background(self.maze_gen.maze)
 
         while self.running:
             for event in pygame.event.get():
@@ -53,13 +50,15 @@ class Engine:
                     self.running = False
                 if (
                     event.type == pygame.KEYDOWN
-                    and self.key_handler(event.key) == 0
+                    and self.move_handler(event.key) == 0
                 ):
-                    print(self.maze_gen.maze)
-                    print(self.player.pos)
-                self.maze_renderer.draw(screen)
-                draw_player(screen, self.player.pos)
-                pygame.display.flip()
+                    col, row = self.player.pos
+                    if self.pac_gum.pac_gum[row][col] == 1:
+                        self.pac_gum.pac_gum[row][col] = 0
+                        self.player.score += self.pac_gum.value
+                        print(self.player.score)
+
+            self.renderer.render_frame(self)
         pygame.quit()
 
 
