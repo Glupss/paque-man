@@ -1,10 +1,10 @@
 from config import GameConfig
-import player
 import pygame
 from mazegenerator import MazeGenerator
 from pac_gum import PacGum
 from player import Player
 from renderer import Renderer
+from ghosts import Blinky
 
 
 class Engine:
@@ -13,6 +13,7 @@ class Engine:
         self.renderer = Renderer(config)
         self.player = Player(self.maze_gen.maze, 0, 0, config)
         self.pac_gum = PacGum(self.maze_gen, config)
+        self.ghost = Blinky(self.maze_gen, self.player, (9, 9))
         self.running = True
 
     def change_direction(self, keycode: int) -> None:
@@ -50,6 +51,7 @@ class Engine:
                         self.change_direction(event.key)
             self.player.update()
             col, row = self.player.get_grid_pos()
+            self.ghost.move_to_target()
             if self.pac_gum.pac_gum[row][col] == 1:
                 self.pac_gum.pac_gum[row][col] = 0
                 self.player.score += self.pac_gum.value

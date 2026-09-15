@@ -12,6 +12,7 @@ class Renderer:
         self.wall_thikness = config.wall_thikness
         self.color_wall = config.color_wall
         self.color_player = config.color_player
+        self.color_ghost = config.color_ghost
         self.color_pacgum = config.color_pacgum
         self.pacgum_radius = config.pacgum_radius
         screen_w = (config.m_width + config.padding * 2) * config.box_size
@@ -255,6 +256,19 @@ class Renderer:
             player_size,
             self.color_player,
         )"""
+        ghost_col, ghost_row = engine.ghost.pos
+        gx_x = self._box_px(ghost_col) + self.wall_thikness + 2
+        gx_y = self._box_py(ghost_row) + self.wall_thikness + 2
+        player_size = self.box_size - (2 * self.wall_thikness) - 4
+        self._draw_rectangle(
+            self.screen,
+            pixels,
+            gx_x,
+            gx_y,
+            player_size,
+            player_size,
+            self.color_ghost,
+        )
         pixels.close()
         self.screen.blit(sprite, (top_left_x, top_left_y))
         pygame.display.flip()
