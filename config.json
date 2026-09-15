@@ -1,4 +1,4 @@
-# Fichier de configuration principal pour Pac-Man (42)
+# Fichier de configuration principal pour Pac-Man
 
 {
     # --- Gameplay ---
@@ -6,19 +6,20 @@
     "seed": 42,
     "level_max_time": 90,
     "pacgum": 40,
-    "lives": 3,
     "point_per_pacgum": 10,
     "point_per_super_pacgum": 50,
     "point_per_ghost": 200,
+	"player_speed": 2.7,
 
     # --- Taille du labyrinthe ---
-    "width": 20,
-    "height": 20,
+    "m_width": 20,
+    "m_height": 20,
 
-    # --- Affichage graphique (MLX / Pygame) ---
-    "box_size": 20,
-    "wall_thikness": 1,
+    # --- Affichage graphique (Pygame) ---
+    "box_size": 30,
+    "wall_thikness": 2,
     "padding": 1,
+	"pacgum_radius": 3,
     
     # Couleurs (R, G, B)
     "color_wall": [33, 50, 197],
