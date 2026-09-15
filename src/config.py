@@ -13,13 +13,16 @@ class GameConfig(BaseModel):
     point_per_pacgum: int = 10
     point_per_super_pacgum: int = 50
     point_per_ghost: int = 200
+    player_speed: int | float = 4
 
     # affichage
-    height: int = 30
-    width: int = 30
+    m_height: int = 30
+    m_width: int = 30
     box_size: int = 20
     wall_thikness: int = 1
     padding: int = 1
+    top_offset: int = 90 + (box_size * padding)
+    pacgum_radius: int = 4
 
     # colors
     color_player: tuple[int, int, int] = (255, 255, 0)

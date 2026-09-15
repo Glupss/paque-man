@@ -1,4 +1,5 @@
 from config import GameConfig
+import player
 import pygame
 
 
@@ -6,22 +7,66 @@ class Renderer:
     def __init__(self, config: GameConfig) -> None:
         pygame.init()
         self.padding = config.padding
+        self.top_offset = config.top_offset
         self.box_size = config.box_size
         self.wall_thikness = config.wall_thikness
         self.color_wall = config.color_wall
         self.color_player = config.color_player
         self.color_pacgum = config.color_pacgum
-        self.pacgum_radius = 3
-        screen_w = (config.width + config.padding * 2) * config.box_size
-        screen_h = (config.height + config.padding * 2) * config.box_size
+        self.pacgum_radius = config.pacgum_radius
+        screen_w = (config.m_width + config.padding * 2) * config.box_size
+        screen_h = (
+            config.m_height + config.padding * 3
+        ) * config.box_size + self.top_offset
         self.background_surface = pygame.Surface((screen_w, screen_h))
         self.screen = pygame.display.set_mode((screen_w, screen_h))
+        # Logo PacMan
+        original_logo = pygame.image.load(
+            "./assets/Pacman_logo.png"
+        ).convert_alpha()
+        target_width = int(screen_w * 0.4)
+        ratio = original_logo.get_height() / original_logo.get_width()
+        target_height = int(target_width * ratio)
+        self.logo = pygame.transform.smoothscale(
+            original_logo, (target_width, target_height)
+        )
+        # pacman sprite
+        player_size = self.box_size - (2 * self.wall_thikness) - 4
+
+        def load_and_scale(filepath):
+            img = pygame.image.load(filepath).convert_alpha()
+            return pygame.transform.smoothscale(
+                img, (player_size, player_size)
+            )
+
+        self.pacman_sprites = {
+            "RIGHT": [
+                load_and_scale("assets/img_right_0.png"),
+                load_and_scale("assets/img_right_1.png"),
+                load_and_scale("assets/img_right_2.png"),
+            ],
+            "LEFT": [
+                load_and_scale("assets/img_left_0.png"),
+                load_and_scale("assets/img_left_1.png"),
+                load_and_scale("assets/img_left_2.png"),
+            ],
+            "UP": [
+                load_and_scale("assets/img_up_0.png"),
+                load_and_scale("assets/img_up_1.png"),
+                load_and_scale("assets/img_up_2.png"),
+            ],
+            "DOWN": [
+                load_and_scale("assets/img_down_0.png"),
+                load_and_scale("assets/img_down_1.png"),
+                load_and_scale("assets/img_down_2.png"),
+            ],
+        }
 
     def _box_px(self, box_col: int) -> int:
         return (box_col + self.padding) * self.box_size
 
     def _box_py(self, box_row: int) -> int:
-        return (box_row + self.padding) * self.box_size
+        return (box_row + self.padding) * self.box_size + self.top_offset
 
     def _draw_box(self, surface, pixels, box_col, box_row, color) -> None:
         origin_x = self._box_px(box_col) + self.wall_thikness
@@ -144,6 +189,10 @@ class Renderer:
                     maze_grid[row][col],
                 )
         pixels.close()
+        logo_rect = self.logo.get_rect()
+        logo_rect.centerx = self.background_surface.get_width() // 2
+        logo_rect.y = self.padding * self.box_size
+        self.background_surface.blit(self.logo, logo_rect)
 
     def render_frame(self, engine) -> None:
         self.screen.blit(self.background_surface, (0, 0))
@@ -161,18 +210,51 @@ class Renderer:
                         self.pacgum_radius,
                         self.color_pacgum,
                     )
-        player_col, player_row = engine.player.pos
-        px_x = self._box_px(player_col) + self.wall_thikness + 2
-        px_y = self._box_py(player_row) + self.wall_thikness + 2
+        # ---Player render---
+        center_x = engine.player.x
+        center_y = engine.player.y
         player_size = self.box_size - (2 * self.wall_thikness) - 4
-        self._draw_rectangle(
+        top_left_x = int(center_x - (player_size // 2))
+        top_left_y = int(center_y - (player_size // 2))
+
+        progress = (engine.player.x + engine.player.y) % self.box_size
+        cycle_step = int((progress / self.box_size) * 4)
+
+        match cycle_step:
+            case 0:
+                frame_index = 0  # close
+            case 1:
+                frame_index = 1  # opening
+            case 2:
+                frame_index = 2  # big mouth
+            case 3:
+                frame_index = 1  # opening/closing
+
+        dx, dy = engine.player.dir
+        if dx == 0 and dy == 0:
+            dx, dy = engine.player.next_dir
+
+        direction_str = "RIGHT"
+        if dx == 1:
+            direction_str = "RIGHT"
+        elif dx == -1:
+            direction_str = "LEFT"
+        elif dy == 1:
+            direction_str = "DOWN"
+        elif dy == -1:
+            direction_str = "UP"
+
+        sprite = self.pacman_sprites[direction_str][frame_index]
+
+        """self._draw_rectangle(
             self.screen,
             pixels,
-            px_x,
-            px_y,
+            top_left_x,
+            top_left_y,
             player_size,
             player_size,
             self.color_player,
-        )
+        )"""
         pixels.close()
+        self.screen.blit(sprite, (top_left_x, top_left_y))
         pygame.display.flip()
