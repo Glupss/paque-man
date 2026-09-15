@@ -62,6 +62,12 @@ class Renderer:
                 load_and_scale("assets/img_down_2.png"),
             ],
         }
+        self.ghost_sprites = [
+            load_and_scale("assets/ghost1.png"),
+            load_and_scale("assets/ghost2.png"),
+            load_and_scale("assets/ghost3.png"),
+            load_and_scale("assets/ghost4.png"),
+        ]
 
     def _box_px(self, box_col: int) -> int:
         return (box_col + self.padding) * self.box_size
@@ -256,19 +262,18 @@ class Renderer:
             player_size,
             self.color_player,
         )"""
-        ghost_col, ghost_row = engine.ghost.pos
-        gx_x = self._box_px(ghost_col) + self.wall_thikness + 2
-        gx_y = self._box_py(ghost_row) + self.wall_thikness + 2
-        player_size = self.box_size - (2 * self.wall_thikness) - 4
-        self._draw_rectangle(
-            self.screen,
-            pixels,
-            gx_x,
-            gx_y,
-            player_size,
-            player_size,
-            self.color_ghost,
-        )
+        tl_x = []
+        tl_y = []
+        sprites = []
+        count = 0
+        for ghost in engine.ghosts:
+            ghost_col, ghost_row = ghost.x, ghost.y
+            tl_x.append(int(ghost_col - (player_size // 2)))
+            tl_y.append(int(ghost_row - (player_size // 2)))
+            sprites.append(self.ghost_sprites[count])
+            count += 1
         pixels.close()
         self.screen.blit(sprite, (top_left_x, top_left_y))
+        for x in range(len(sprites)):
+            self.screen.blit(sprites[x], (tl_x[x], tl_y[x]))
         pygame.display.flip()
