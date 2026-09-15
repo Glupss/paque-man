@@ -11,8 +11,14 @@ class Engine:
     def __init__(self, config: GameConfig) -> None:
         self.maze_gen = MazeGenerator((config.m_height, config.m_width))
         self.renderer = Renderer(config)
-        self.player = Player(self.maze_gen.maze, 0, 0, config)
-        self.pac_gum = PacGum(self.maze_gen, config)
+        # Start pos Pacman
+        start_col = config.m_width // 2
+        start_row = config.m_height // 2
+        while self.maze_gen.maze[start_row][start_col] == 15:
+            start_col += 1
+        self.player = Player(self.maze_gen.maze, start_col, start_row, config)
+
+        self.pac_gum = PacGum(self.maze_gen, config, start_col, start_row)
         self.running = True
 
     def change_direction(self, keycode: int) -> None:
