@@ -1,4 +1,3 @@
-from mazegenerator import MazeGenerator
 from abc import ABC, abstractmethod
 from player import Player
 from math import dist
@@ -8,17 +7,16 @@ from config import GameConfig
 class Ghost(ABC):
     def __init__(
         self,
-        maze: MazeGenerator,
+        maze_grid: list[list[int]],
         pac_man: Player,
-        start_col: int,
         start_row: int,
+        start_col: int,
         config: GameConfig,
         escape: tuple = (0, 0),
     ):
-        self.maze = maze
-        self.grid = maze.maze
+        self.maze_grid = maze_grid
         self.config = config
-        self.grid_pos = (start_col, start_row)
+        self.grid_pos = (start_row, start_col)
         self.target = (0, 0)
         self.pac_man = pac_man
         self.escape = escape
@@ -39,9 +37,9 @@ class Ghost(ABC):
 
     def grid_to_pix(self, x, y) -> tuple[int, int]:
         config = self.config
-        px = (x + config.padding) * config.box_size + (config.box_size // 2)
+        px = (y + config.padding) * config.box_size + (config.box_size // 2)
         py = (
-            (y + config.padding) * config.box_size
+            (x + config.padding) * config.box_size
             + (config.box_size // 2)
             + config.top_offset
         )
@@ -52,17 +50,20 @@ class Ghost(ABC):
     ) -> None:
         if self.is_centered(*self.grid_pos):
             possible_tiles: list[tuple[int, int]] = []
+
             neighbors = [(1, 0), (0, -1), (0, 1), (-1, 0)]
 
             for tile in neighbors:
-                target = (
+                target_cell = (
                     self.grid_pos[0] + tile[0],
                     self.grid_pos[1] + tile[1],
                 )
                 if (
-                    self.can_move(self.grid_pos, target)
-                    and self.is_valid_pos(target)
-                    and target != self.last_pos
+                    self.can_move(
+                        self.grid_pos[0], self.grid_pos[1], target_cell
+                    )
+                    and self.is_valid_pos(target_cell)
+                    and target_cell != self.last_pos
                 ):
                     possible_tiles.append(tile)
 
@@ -82,14 +83,14 @@ class Ghost(ABC):
                 ),
             )
 
-        self.x += self.current_dir[0] * self.speed
-        self.y += self.current_dir[1] * self.speed
-        col, row = self.get_grid_pos()
-        if self.is_centered(col, row):
+        self.x += self.current_dir[1] * self.speed
+        self.y += self.current_dir[0] * self.speed
+        row, col = self.get_grid_pos()
+        if self.is_centered(row, col):
             self.last_pos = self.grid_pos
-            self.grid_pos = (col, row)
+            self.grid_pos = (row, col)
 
-    def is_centered(self, col, row) -> bool:
+    def is_centered(self, row, col) -> bool:
         target_x = (col + self.config.padding) * self.config.box_size + (
             self.config.box_size // 2
         )
@@ -121,48 +122,48 @@ class Ghost(ABC):
             )
             // self.config.box_size
         )
-        return col, row
+        return row, col
 
     def is_valid_pos(self, pos: tuple[int, int]) -> bool:
         if pos[0] < 0 or pos[1] < 0:
             return False
-        elif pos[0] > len(self.grid[0]) - 1 or pos[1] > len(self.grid) - 1:
+        elif (
+            pos[0] > len(self.maze_grid) - 1
+            or pos[1] > len(self.maze_grid[0]) - 1
+        ):
             return False
-        if self.grid[pos[1]][pos[0]] == 15:
+        if self.maze_grid[pos[0]][pos[1]] == 15:
             return False
         return True
 
     def can_move(
         self,
-        curr_pos: tuple[int, int],
-        new_pos: tuple[int, int],
+        row,
+        col,
+        direction,
     ) -> bool:
         """
         Check either we can move or not based on the wall positions
         return True = OK
         Return False = NOT OK
         """
+        if direction == (0, 0):
+            return False
+
+        dx, dy = direction
         WALL_N = 1  # 0001
         WALL_E = 2  # 0010
         WALL_S = 4  # 0100
         WALL_W = 8  # 1000
 
-        if new_pos[1] < curr_pos[1]:
-            # UP
-            if self.grid[curr_pos[1]][curr_pos[0]] & WALL_N:
-                return False
-        elif new_pos[1] > curr_pos[1]:
-            # DOWN
-            if self.grid[curr_pos[1]][curr_pos[0]] & WALL_S:
-                return False
-        elif new_pos[0] < curr_pos[0]:
-            # LEFT
-            if self.grid[curr_pos[1]][curr_pos[0]] & WALL_W:
-                return False
-        elif new_pos[0] > curr_pos[0]:
-            # RIGHT
-            if self.grid[curr_pos[1]][curr_pos[0]] & WALL_E:
-                return False
+        if dx == -1 and (self.maze_grid[row][col] & WALL_N):
+            return False
+        if dx == 1 and (self.maze_grid[row][col] & WALL_S):
+            return False
+        if dy == -1 and (self.maze_grid[row][col] & WALL_W):
+            return False
+        if dy == 1 and (self.maze_grid[row][col] & WALL_E):
+            return False
         return True
 
     def get_dist(
@@ -188,7 +189,7 @@ class Blinky(Ghost):
 class Inky(Ghost):
     def __init__(
         self,
-        maze: MazeGenerator,
+        maze_grid: list[list[int]],
         pac_man: Player,
         start_col: int,
         start_row: int,
@@ -197,7 +198,7 @@ class Inky(Ghost):
         escape: tuple = (0, 0),
     ):
         super().__init__(
-            maze=maze,
+            maze_grid=maze_grid,
             pac_man=pac_man,
             start_col=start_col,
             start_row=start_row,

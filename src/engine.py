@@ -13,16 +13,18 @@ class Engine:
         self.maze_gen = MazeGenerator((config.m_width, config.m_height))
         self.maze_grid = self.maze_gen.maze
         self.renderer = Renderer(config)
-        blinky = Blinky(self.maze_gen, self.player, 9, 9, config)
-        self.ghosts = [
-            blinky,
-            Inky(self.maze_gen, self.player, 13, 13, config, blinky),
-            Pinky(self.maze_gen, self.player, 15, 15, config),
-            Clyde(self.maze_gen, self.player, 5, 5, config, (15, 15)),
-        ]
         # Start pos Pacman
         start_col, start_row = self._get_spawn_point()
         self.player = Player(self.maze_grid, start_row, start_col, config)
+
+        # init ghost
+        blinky = Blinky(self.maze_grid, self.player, 9, 9, config)
+        self.ghosts = [
+            blinky,
+            Inky(self.maze_grid, self.player, 13, 13, config, blinky),
+            Pinky(self.maze_grid, self.player, 15, 15, config),
+            Clyde(self.maze_grid, self.player, 5, 5, config, (15, 15)),
+        ]
 
         self.pac_gum = PacGum(self.maze_grid, config, start_row, start_col)
         self.running = True
@@ -92,11 +94,11 @@ class Engine:
                     else:
                         self.change_direction(event.key)
             self.player.update()
-         
+
             for ghost in self.ghosts:
                 ghost.chose_target()
                 ghost.move_to_target()
-       
+
             self._eat_pacgums()
 
             self.renderer.render_frame(self)

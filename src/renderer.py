@@ -1,6 +1,6 @@
 from config import GameConfig
-import player
 import pygame
+import engine
 
 
 class Renderer:
@@ -221,7 +221,7 @@ class Renderer:
                         self.screen, pixels, x, y, radius, self.color_pacgum
                     )
 
-    def _draw_player(self, player) -> None:
+    def _draw_player(self, player, ghosts) -> None:
 
         player_size = self.box_size - (2 * self.wall_thikness) - 4
         top_left_x = int(player.x - (player_size // 2))
@@ -264,24 +264,15 @@ class Renderer:
         tl_y = []
         sprites = []
         count = 0
-        for ghost in engine.ghosts:
+        for ghost in ghosts:
             ghost_col, ghost_row = ghost.x, ghost.y
             tl_x.append(int(ghost_col - (player_size // 2)))
             tl_y.append(int(ghost_row - (player_size // 2)))
             sprites.append(self.ghost_sprites[count])
-            """self._draw_circle(
-                self.screen,
-                pixels,
-                color=self.color_player,
-                center_x=int(ghost.target[0]),
-                center_y=int(ghost.target[1]),
-                radius=int(player_size / 2),
-            )"""
             count += 1
-        pixels.close()
-        self.screen.blit(sprite, (top_left_x, top_left_y))
         for x in range(len(sprites)):
             self.screen.blit(sprites[x], (tl_x[x], tl_y[x]))
+
     def render_frame(self, engine) -> None:
         self.screen.blit(self.background_surface, (0, 0))
 
@@ -291,7 +282,7 @@ class Renderer:
         pixels.close()
 
         # pacman
-        self._draw_player(engine.player)
+        self._draw_player(engine.player, engine.ghosts)
 
         # send
         pygame.display.flip()
