@@ -12,6 +12,7 @@ class Renderer:
         self.wall_thikness = config.wall_thikness
         self.color_wall = config.color_wall
         self.color_player = config.color_player
+        self.color_ghost = config.color_ghost
         self.color_pacgum = config.color_pacgum
         self.pacgum_radius = config.pacgum_radius
         screen_w = (config.m_width + config.padding * 2) * config.box_size
@@ -65,6 +66,12 @@ class Renderer:
                 load_and_scale("assets/img_down_2.png"),
             ],
         }
+        self.ghost_sprites = [
+            load_and_scale("assets/ghost1.png"),
+            load_and_scale("assets/ghost2.png"),
+            load_and_scale("assets/ghost3.png"),
+            load_and_scale("assets/ghost4.png"),
+        ]
 
     def _box_px(self, box_col: int) -> int:
         return (box_col + self.padding) * self.box_size
@@ -253,6 +260,28 @@ class Renderer:
         sprite = self.pacman_sprites[direction_str][frame_index]
         self.screen.blit(sprite, (top_left_x, top_left_y))
 
+        tl_x = []
+        tl_y = []
+        sprites = []
+        count = 0
+        for ghost in engine.ghosts:
+            ghost_col, ghost_row = ghost.x, ghost.y
+            tl_x.append(int(ghost_col - (player_size // 2)))
+            tl_y.append(int(ghost_row - (player_size // 2)))
+            sprites.append(self.ghost_sprites[count])
+            """self._draw_circle(
+                self.screen,
+                pixels,
+                color=self.color_player,
+                center_x=int(ghost.target[0]),
+                center_y=int(ghost.target[1]),
+                radius=int(player_size / 2),
+            )"""
+            count += 1
+        pixels.close()
+        self.screen.blit(sprite, (top_left_x, top_left_y))
+        for x in range(len(sprites)):
+            self.screen.blit(sprites[x], (tl_x[x], tl_y[x]))
     def render_frame(self, engine) -> None:
         self.screen.blit(self.background_surface, (0, 0))
 

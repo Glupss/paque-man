@@ -4,6 +4,7 @@ from mazegenerator import MazeGenerator
 from pac_gum import PacGum
 from player import Player
 from renderer import Renderer
+from ghosts import Blinky, Inky, Pinky, Clyde
 
 
 class Engine:
@@ -12,6 +13,13 @@ class Engine:
         self.maze_gen = MazeGenerator((config.m_width, config.m_height))
         self.maze_grid = self.maze_gen.maze
         self.renderer = Renderer(config)
+        blinky = Blinky(self.maze_gen, self.player, 9, 9, config)
+        self.ghosts = [
+            blinky,
+            Inky(self.maze_gen, self.player, 13, 13, config, blinky),
+            Pinky(self.maze_gen, self.player, 15, 15, config),
+            Clyde(self.maze_gen, self.player, 5, 5, config, (15, 15)),
+        ]
         # Start pos Pacman
         start_col, start_row = self._get_spawn_point()
         self.player = Player(self.maze_grid, start_row, start_col, config)
@@ -78,9 +86,17 @@ class Engine:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self.running = False
+                    elif event.key == pygame.K_SPACE:
+                        for ghost in self.ghosts:
+                            ghost.flee = not ghost.flee
                     else:
                         self.change_direction(event.key)
             self.player.update()
+         
+            for ghost in self.ghosts:
+                ghost.chose_target()
+                ghost.move_to_target()
+       
             self._eat_pacgums()
 
             self.renderer.render_frame(self)

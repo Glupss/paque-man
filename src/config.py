@@ -26,6 +26,7 @@ class GameConfig(BaseModel):
 
     # colors
     color_player: tuple[int, int, int] = (255, 255, 0)
+    color_ghost: tuple[int, int, int] = (255, 0, 255)
     color_wall: tuple[int, int, int] = (33, 50, 197)
     color_pacgum: tuple[int, int, int] = (255, 184, 255)
 
