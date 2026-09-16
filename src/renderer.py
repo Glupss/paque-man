@@ -271,6 +271,14 @@ class Renderer:
             tl_x.append(int(ghost_col - (player_size // 2)))
             tl_y.append(int(ghost_row - (player_size // 2)))
             sprites.append(self.ghost_sprites[count])
+            """self._draw_circle(
+                self.screen,
+                pixels,
+                color=self.color_player,
+                center_x=int(ghost.target[0]),
+                center_y=int(ghost.target[1]),
+                radius=int(player_size / 2),
+            )"""
             count += 1
         pixels.close()
         self.screen.blit(sprite, (top_left_x, top_left_y))

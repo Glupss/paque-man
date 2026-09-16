@@ -13,9 +13,10 @@ class Engine:
         self.renderer = Renderer(config)
         self.player = Player(self.maze_gen.maze, 0, 0, config)
         self.pac_gum = PacGum(self.maze_gen, config)
+        blinky = Blinky(self.maze_gen, self.player, 9, 9, config)
         self.ghosts = [
-            Blinky(self.maze_gen, self.player, 9, 9, config),
-            Inky(self.maze_gen, self.player, 13, 13, config),
+            blinky,
+            Inky(self.maze_gen, self.player, 13, 13, config, blinky),
             Pinky(self.maze_gen, self.player, 15, 15, config),
             Clyde(self.maze_gen, self.player, 5, 5, config, (15, 15)),
         ]
@@ -52,6 +53,9 @@ class Engine:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self.running = False
+                    elif event.key == pygame.K_SPACE:
+                        for ghost in self.ghosts:
+                            ghost.flee = not ghost.flee
                     else:
                         self.change_direction(event.key)
             self.player.update()

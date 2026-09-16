@@ -25,6 +25,7 @@ class Ghost(ABC):
         self.speed = 2
         self.last_pos = (0, 0)
         self.current_dir = (0, 0)
+        self.flee = False
 
         # pix coordinate
         self.x = (start_col + config.padding) * config.box_size + (
@@ -178,36 +179,75 @@ class Blinky(Ghost):
     def chose_target(
         self,
     ) -> None:
-        self.target = (self.pac_man.x, self.pac_man.y)
+        if not self.flee:
+            self.target = (self.pac_man.x, self.pac_man.y)
+        else:
+            self.target = self.grid_to_pix(self.escape[0], self.escape[1])
 
 
 class Inky(Ghost):
+    def __init__(
+        self,
+        maze: MazeGenerator,
+        pac_man: Player,
+        start_col: int,
+        start_row: int,
+        config: GameConfig,
+        blinky,
+        escape: tuple = (0, 0),
+    ):
+        super().__init__(
+            maze=maze,
+            pac_man=pac_man,
+            start_col=start_col,
+            start_row=start_row,
+            config=config,
+            escape=escape,
+        )
+        self.blinky = blinky
+
     def chose_target(
         self,
     ) -> None:
-        self.target = (self.pac_man.x, self.pac_man.y)
+        if not self.flee:
+            anchor = (
+                self.pac_man.x + (self.pac_man.dir[0] * 120),
+                self.pac_man.y + (self.pac_man.dir[1] * 120),
+            )
+            self.target = (
+                2 * anchor[0] - self.blinky.x,
+                2 * anchor[1] - self.blinky.y,
+            )
+        else:
+            self.target = self.grid_to_pix(self.escape[0], self.escape[1])
 
 
 class Pinky(Ghost):
     def chose_target(
         self,
     ) -> None:
-        self.target = (
-            self.pac_man.x + self.pac_man.dir[0] * 2,
-            self.pac_man.y + self.pac_man.dir[1] * 2,
-        )
+        if not self.flee:
+            self.target = (
+                self.pac_man.x + (self.pac_man.dir[0] * 200),
+                self.pac_man.y + (self.pac_man.dir[1] * 200),
+            )
+        else:
+            self.target = self.grid_to_pix(self.escape[0], self.escape[1])
 
 
 class Clyde(Ghost):
     def chose_target(
         self,
     ) -> None:
-        self.target = (self.pac_man.x, self.pac_man.y)
-        if (
-            self.get_dist(
-                self.grid_to_pix(self.grid_pos[0], self.grid_pos[1]),
-                self.target,
-            )
-            < 240
-        ):
+        if not self.flee:
+            self.target = (self.pac_man.x, self.pac_man.y)
+            if (
+                self.get_dist(
+                    self.grid_to_pix(self.grid_pos[0], self.grid_pos[1]),
+                    self.target,
+                )
+                < 240
+            ):
+                self.target = self.grid_to_pix(self.escape[0], self.escape[1])
+        else:
             self.target = self.grid_to_pix(self.escape[0], self.escape[1])
