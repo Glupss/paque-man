@@ -1,21 +1,25 @@
 from config import GameConfig
-from mazegenerator import MazeGenerator
 
 
 class PacGum:
     def __init__(
         self,
-        maze: MazeGenerator,
+        maze_grid: list[list[int]],
         config: GameConfig,
-        start_col: int,
         start_row: int,
+        start_col: int,
     ) -> None:
         self.pac_gum: list[list[int]] = [
-            [0 if val == 15 else 1 for val in row] for row in maze.maze
+            [0 if val == 15 else 1 for val in row] for row in maze_grid
         ]
-        self._clear_42_zone(maze.maze, 2)
+        self._clear_42_zone(maze_grid, 0)
         self.value = config.point_per_pacgum
+        self.super_value = config.point_per_super_pacgum
         self.pac_gum[start_row][start_col] = 0
+        self.pac_gum[0][0] = 2
+        self.pac_gum[0][-1] = 2
+        self.pac_gum[-1][0] = 2
+        self.pac_gum[-1][-1] = 2
 
     def _clear_42_zone(self, maze_grid: list[list[int]], margin: int) -> None:
         """ """

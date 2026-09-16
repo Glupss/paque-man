@@ -12,8 +12,8 @@
 	"player_speed": 2.7,
 
     # --- Taille du labyrinthe ---
-    "m_width": 20,
-    "m_height": 20,
+    "m_width": 14,
+    "m_height": 15,
 
     # --- Affichage graphique (Pygame) ---
     "box_size": 30,
