@@ -51,40 +51,39 @@ class Ghost(ABC):
         if self.is_centered(*self.grid_pos):
             possible_tiles: list[tuple[int, int]] = []
 
-            neighbors = [(1, 0), (0, -1), (0, 1), (-1, 0)]
+            neighbors = [(0, -1), (0, 1), (-1, 0), (1, 0)]
 
             for tile in neighbors:
+                dx, dy = tile
                 target_cell = (
-                    self.grid_pos[0] + tile[0],
-                    self.grid_pos[1] + tile[1],
+                    self.grid_pos[0] + dy,
+                    self.grid_pos[1] + dx,
                 )
                 if (
-                    self.can_move(
-                        self.grid_pos[0], self.grid_pos[1], target_cell
-                    )
+                    self.can_move(self.grid_pos[0], self.grid_pos[1], tile)
                     and self.is_valid_pos(target_cell)
                     and target_cell != self.last_pos
                 ):
                     possible_tiles.append(tile)
 
             if not possible_tiles:
-                dx = self.last_pos[0] - self.grid_pos[0]
-                dy = self.last_pos[1] - self.grid_pos[1]
+                dy = self.last_pos[0] - self.grid_pos[0]
+                dx = self.last_pos[1] - self.grid_pos[1]
                 possible_tiles.append((dx, dy))
 
             self.current_dir = min(
                 possible_tiles,
                 key=lambda tile: self.get_dist(
                     self.grid_to_pix(
-                        self.grid_pos[0] + tile[0],
-                        self.grid_pos[1] + tile[1],
+                        self.grid_pos[0] + tile[1],
+                        self.grid_pos[1] + tile[0],
                     ),
                     self.target,
                 ),
             )
 
-        self.x += self.current_dir[1] * self.speed
-        self.y += self.current_dir[0] * self.speed
+        self.x += self.current_dir[0] * self.speed
+        self.y += self.current_dir[1] * self.speed
         row, col = self.get_grid_pos()
         if self.is_centered(row, col):
             self.last_pos = self.grid_pos
@@ -127,10 +126,7 @@ class Ghost(ABC):
     def is_valid_pos(self, pos: tuple[int, int]) -> bool:
         if pos[0] < 0 or pos[1] < 0:
             return False
-        elif (
-            pos[0] > len(self.maze_grid) - 1
-            or pos[1] > len(self.maze_grid[0]) - 1
-        ):
+        if pos[0] >= len(self.maze_grid) or pos[1] >= len(self.maze_grid[0]):
             return False
         if self.maze_grid[pos[0]][pos[1]] == 15:
             return False
@@ -156,13 +152,13 @@ class Ghost(ABC):
         WALL_S = 4  # 0100
         WALL_W = 8  # 1000
 
-        if dx == -1 and (self.maze_grid[row][col] & WALL_N):
+        if dy == -1 and (self.maze_grid[row][col] & WALL_N):
             return False
-        if dx == 1 and (self.maze_grid[row][col] & WALL_S):
+        if dy == 1 and (self.maze_grid[row][col] & WALL_S):
             return False
-        if dy == -1 and (self.maze_grid[row][col] & WALL_W):
+        if dx == -1 and (self.maze_grid[row][col] & WALL_W):
             return False
-        if dy == 1 and (self.maze_grid[row][col] & WALL_E):
+        if dx == 1 and (self.maze_grid[row][col] & WALL_E):
             return False
         return True
 
