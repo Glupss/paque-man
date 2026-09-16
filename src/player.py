@@ -5,8 +5,8 @@ class Player:
     def __init__(
         self,
         maze_grid: list[list[int]],
-        start_col: int,
         start_row: int,
+        start_col: int,
         config: GameConfig,
     ) -> None:
         self.grid = maze_grid
@@ -41,9 +41,9 @@ class Player:
             )
             // self.config.box_size
         )
-        return col, row
+        return row, col
 
-    def is_centered(self, col, row) -> bool:
+    def is_centered(self, row, col) -> bool:
         target_x = (col + self.config.padding) * self.config.box_size + (
             self.config.box_size // 2
         )
@@ -64,8 +64,8 @@ class Player:
 
     def can_move(
         self,
-        col,
         row,
+        col,
         direction,
     ) -> bool:
         """
@@ -93,11 +93,11 @@ class Player:
         return True
 
     def update(self) -> None:
-        col, row = self.get_grid_pos()
-        if self.is_centered(col, row):
-            if self.can_move(col, row, self.next_dir):
+        row, col = self.get_grid_pos()
+        if self.is_centered(row, col):
+            if self.can_move(row, col, self.next_dir):
                 self.dir = self.next_dir
-            if not self.can_move(col, row, self.dir):
+            if not self.can_move(row, col, self.dir):
                 self.dir = (0, 0)
         else:
             if (
