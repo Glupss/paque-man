@@ -9,10 +9,10 @@ from ghosts import Blinky, Inky, Pinky, Clyde
 
 class Engine:
     def __init__(self, config: GameConfig) -> None:
-        self.maze_gen = MazeGenerator((config.m_height, config.m_width))
+        self.config = config
+        self.maze_gen = MazeGenerator((config.m_width, config.m_height))
+        self.maze_grid = self.maze_gen.maze
         self.renderer = Renderer(config)
-        self.player = Player(self.maze_gen.maze, 0, 0, config)
-        self.pac_gum = PacGum(self.maze_gen, config)
         blinky = Blinky(self.maze_gen, self.player, 9, 9, config)
         self.ghosts = [
             blinky,
@@ -20,7 +20,27 @@ class Engine:
             Pinky(self.maze_gen, self.player, 15, 15, config),
             Clyde(self.maze_gen, self.player, 5, 5, config, (15, 15)),
         ]
+        # Start pos Pacman
+        start_col, start_row = self._get_spawn_point()
+        self.player = Player(self.maze_grid, start_row, start_col, config)
+
+        self.pac_gum = PacGum(self.maze_grid, config, start_row, start_col)
         self.running = True
+
+    def _get_spawn_point(self) -> tuple[int, int]:
+        center_col = self.config.m_width // 2
+        center_row = self.config.m_height // 2
+
+        for radius in range(self.config.m_width):
+            for r in range(center_row - radius, center_row + radius + 1):
+                for c in range(center_col - radius, center_col + radius + 1):
+                    if (
+                        0 <= r < self.config.m_height
+                        and 0 <= c < self.config.m_width
+                    ):
+                        if self.maze_grid[r][c] != 15:
+                            return c, r
+        return center_col, center_row
 
     def change_direction(self, keycode: int) -> None:
         """
@@ -41,8 +61,21 @@ class Engine:
                 # Droite = on augmente les colonnes (X)
                 self.player.next_dir = (1, 0)
 
+    def _eat_pacgums(self) -> None:
+        row, col = self.player.get_grid_pos()
+        val = self.pac_gum.pac_gum[row][col]
+
+        if val == 1:
+            self.pac_gum.pac_gum[row][col] = 0
+            self.player.score += self.pac_gum.value
+            print(f"Score: {self.player.score}")
+        elif val == 2:
+            self.pac_gum.pac_gum[row][col] = 0
+            self.player.score += self.pac_gum.super_value
+            print(f"Score: {self.player.score}")
+
     def run(self):
-        self.renderer.create_static_background(self.maze_gen.maze)
+        self.renderer.create_static_background(self.maze_grid)
 
         clock = pygame.time.Clock()
 
@@ -59,14 +92,12 @@ class Engine:
                     else:
                         self.change_direction(event.key)
             self.player.update()
-            col, row = self.player.get_grid_pos()
+         
             for ghost in self.ghosts:
                 ghost.chose_target()
                 ghost.move_to_target()
-            if self.pac_gum.pac_gum[row][col] == 1:
-                self.pac_gum.pac_gum[row][col] = 0
-                self.player.score += self.pac_gum.value
-                print(self.player.score)
+       
+            self._eat_pacgums()
 
             self.renderer.render_frame(self)
             clock.tick(60)

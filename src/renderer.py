@@ -17,11 +17,15 @@ class Renderer:
         self.pacgum_radius = config.pacgum_radius
         screen_w = (config.m_width + config.padding * 2) * config.box_size
         screen_h = (
-            config.m_height + config.padding * 3
+            config.m_height + config.padding * 2
         ) * config.box_size + self.top_offset
         self.background_surface = pygame.Surface((screen_w, screen_h))
         self.screen = pygame.display.set_mode((screen_w, screen_h))
-        # Logo PacMan
+
+        self._load_sprites(screen_w)
+
+    def _load_sprites(self, screen_w: int) -> None:
+        # logo PacMan
         original_logo = pygame.image.load(
             "./assets/Pacman_logo.png"
         ).convert_alpha()
@@ -75,7 +79,7 @@ class Renderer:
     def _box_py(self, box_row: int) -> int:
         return (box_row + self.padding) * self.box_size + self.top_offset
 
-    def _draw_box(self, surface, pixels, box_col, box_row, color) -> None:
+    def _draw_box(self, surface, pixels, box_row, box_col, color) -> None:
         origin_x = self._box_px(box_col) + self.wall_thikness
         origin_y = self._box_py(box_row) + self.wall_thikness
         fill = self.box_size - (2 * self.wall_thikness)
@@ -83,7 +87,7 @@ class Renderer:
             surface, pixels, origin_x, origin_y, fill, fill, color
         )
 
-    def _draw_wall_n(self, surface, pixels, box_col, box_row) -> None:
+    def _draw_wall_n(self, surface, pixels, box_row, box_col) -> None:
         origin_x = self._box_px(box_col) + self.wall_thikness
         origin_y = self._box_py(box_row)
         self._draw_rectangle(
@@ -96,7 +100,7 @@ class Renderer:
             self.color_wall,
         )
 
-    def _draw_wall_s(self, surface, pixels, box_col, box_row) -> None:
+    def _draw_wall_s(self, surface, pixels, box_row, box_col) -> None:
         origin_x = self._box_px(box_col) + self.wall_thikness
         origin_y = self._box_py(box_row) + (self.box_size - self.wall_thikness)
         self._draw_rectangle(
@@ -109,7 +113,7 @@ class Renderer:
             self.color_wall,
         )
 
-    def _draw_wall_e(self, surface, pixels, box_col, box_row) -> None:
+    def _draw_wall_e(self, surface, pixels, box_row, box_col) -> None:
         origin_x = self._box_px(box_col) + (self.box_size - self.wall_thikness)
         origin_y = self._box_py(box_row) + self.wall_thikness
         self._draw_rectangle(
@@ -122,7 +126,7 @@ class Renderer:
             self.color_wall,
         )
 
-    def _draw_wall_w(self, surface, pixels, box_col, box_row) -> None:
+    def _draw_wall_w(self, surface, pixels, box_row, box_col) -> None:
         origin_x = self._box_px(box_col)
         origin_y = self._box_py(box_row) + self.wall_thikness
         self._draw_rectangle(
@@ -136,20 +140,20 @@ class Renderer:
         )
 
     def _draw_box_walls(
-        self, surface, pixels, box_col, box_row, bitmask
+        self, surface, pixels, box_row, box_col, bitmask
     ) -> None:
         WALL_N = 1
         WALL_E = 2
         WALL_S = 4
         WALL_W = 8
         if bitmask & WALL_W:
-            self._draw_wall_w(surface, pixels, box_col, box_row)
+            self._draw_wall_w(surface, pixels, box_row, box_col)
         if bitmask & WALL_S:
-            self._draw_wall_s(surface, pixels, box_col, box_row)
+            self._draw_wall_s(surface, pixels, box_row, box_col)
         if bitmask & WALL_E:
-            self._draw_wall_e(surface, pixels, box_col, box_row)
+            self._draw_wall_e(surface, pixels, box_row, box_col)
         if bitmask & WALL_N:
-            self._draw_wall_n(surface, pixels, box_col, box_row)
+            self._draw_wall_n(surface, pixels, box_row, box_col)
 
     def _draw_rectangle(self, surface, pixels, x, y, width, height, color):
         for i in range(x, x + width):
@@ -186,13 +190,13 @@ class Renderer:
                 if maze_grid[row][col] == 15:
                     color_box = (255, 0, 0)
                 self._draw_box(
-                    self.background_surface, pixels, col, row, color_box
+                    self.background_surface, pixels, row, col, color_box
                 )
                 self._draw_box_walls(
                     self.background_surface,
                     pixels,
-                    col,
                     row,
+                    col,
                     maze_grid[row][col],
                 )
         pixels.close()
@@ -201,30 +205,30 @@ class Renderer:
         logo_rect.y = self.padding * self.box_size
         self.background_surface.blit(self.logo, logo_rect)
 
-    def render_frame(self, engine) -> None:
-        self.screen.blit(self.background_surface, (0, 0))
-        pixels = pygame.PixelArray(self.screen)
+    def _draw_pacgums(self, engine, pixels) -> None:
         for row in range(len(engine.pac_gum.pac_gum)):
             for col in range(len(engine.pac_gum.pac_gum[row])):
-                if engine.pac_gum.pac_gum[row][col] == 1:
+                val = engine.pac_gum.pac_gum[row][col]
+                if val in (1, 2):
                     x = self._box_px(col) + (self.box_size // 2)
                     y = self._box_py(row) + (self.box_size // 2)
-                    self._draw_circle(
-                        self.screen,
-                        pixels,
-                        x,
-                        y,
-                        self.pacgum_radius,
-                        self.color_pacgum,
+                    radius = (
+                        self.pacgum_radius
+                        if val == 1
+                        else self.pacgum_radius * 2
                     )
-        # ---Player render---
-        center_x = engine.player.x
-        center_y = engine.player.y
-        player_size = self.box_size - (2 * self.wall_thikness) - 4
-        top_left_x = int(center_x - (player_size // 2))
-        top_left_y = int(center_y - (player_size // 2))
+                    self._draw_circle(
+                        self.screen, pixels, x, y, radius, self.color_pacgum
+                    )
 
-        progress = (engine.player.x + engine.player.y) % self.box_size
+    def _draw_player(self, player) -> None:
+
+        player_size = self.box_size - (2 * self.wall_thikness) - 4
+        top_left_x = int(player.x - (player_size // 2))
+        top_left_y = int(player.y - (player_size // 2))
+
+        # Animation
+        progress = (player.x + player.y) % self.box_size
         cycle_step = int((progress / self.box_size) * 4)
 
         match cycle_step:
@@ -237,9 +241,10 @@ class Renderer:
             case 3:
                 frame_index = 1  # opening/closing
 
-        dx, dy = engine.player.dir
+        # Direction
+        dx, dy = player.dir
         if dx == 0 and dy == 0:
-            dx, dy = engine.player.next_dir
+            dx, dy = player.next_dir
 
         direction_str = "RIGHT"
         if dx == 1:
@@ -251,17 +256,10 @@ class Renderer:
         elif dy == -1:
             direction_str = "UP"
 
+        # Drawing
         sprite = self.pacman_sprites[direction_str][frame_index]
+        self.screen.blit(sprite, (top_left_x, top_left_y))
 
-        """self._draw_rectangle(
-            self.screen,
-            pixels,
-            top_left_x,
-            top_left_y,
-            player_size,
-            player_size,
-            self.color_player,
-        )"""
         tl_x = []
         tl_y = []
         sprites = []
@@ -284,4 +282,16 @@ class Renderer:
         self.screen.blit(sprite, (top_left_x, top_left_y))
         for x in range(len(sprites)):
             self.screen.blit(sprites[x], (tl_x[x], tl_y[x]))
+    def render_frame(self, engine) -> None:
+        self.screen.blit(self.background_surface, (0, 0))
+
+        # pacgums
+        pixels = pygame.PixelArray(self.screen)
+        self._draw_pacgums(engine, pixels)
+        pixels.close()
+
+        # pacman
+        self._draw_player(engine.player)
+
+        # send
         pygame.display.flip()
