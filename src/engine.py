@@ -19,7 +19,7 @@ class Engine:
 
         # init ghost
         blinky = Blinky(
-            self.maze_grid, self.player, start_col, start_row, config
+            self.maze_grid, self.player, start_row, start_col, config
         )
         self.ghosts = [
             blinky,
@@ -31,12 +31,12 @@ class Engine:
                 config,
                 blinky,
             ),
-            Pinky(self.maze_grid, self.player, start_col, start_row, config),
+            Pinky(self.maze_grid, self.player, start_row, start_col, config),
             Clyde(
                 self.maze_grid,
                 self.player,
-                start_col,
                 start_row,
+                start_col,
                 config,
                 (0, 0),
             ),
