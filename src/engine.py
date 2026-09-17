@@ -19,27 +19,20 @@ class Engine:
 
         # init ghost
         blinky = Blinky(
-            self.maze_grid, self.player, start_row, start_col, config
+            self.maze_grid, start_row, start_col, self.player, config
         )
         self.ghosts = [
             blinky,
             Inky(
                 self.maze_grid,
                 self.player,
-                start_col,
                 start_row,
+                start_col,
                 config,
                 blinky,
             ),
-            Pinky(self.maze_grid, self.player, start_row, start_col, config),
-            Clyde(
-                self.maze_grid,
-                self.player,
-                start_row,
-                start_col,
-                config,
-                (0, 0),
-            ),
+            Pinky(self.maze_grid, start_row, start_col, self.player, config),
+            Clyde(self.maze_grid, start_row, start_col, self.player, config),
         ]
 
         self.pac_gum = PacGum(self.maze_grid, config, start_row, start_col)
