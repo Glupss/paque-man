@@ -318,3 +318,41 @@ class Renderer:
             + "press [ESCAPE] to resume",
         )
         pygame.display.flip()
+
+    def show_main_menu(self, selected: int):
+        font = pygame.font.SysFont(None, 36)
+
+        def draw_buttons(font, text: list[str], selected: int):
+            line_height = 36
+            for i, line in enumerate(text):
+                if i == selected:
+                    button_color = (255, 255, 255)
+                    text_color = (0, 0, 0)
+                else:
+                    button_color = (100, 100, 100)
+                    text_color = (255, 255, 255)
+                text_surface = font.render(
+                    line,
+                    True,
+                    text_color,
+                )
+                text_rect = text_surface.get_rect(
+                    center=(self.screen_w // 2, self.screen_h // 4 + (i * line_height))
+                )
+                pixels = pygame.PixelArray(self.screen)
+                self._draw_rectangle(
+                    self.screen,
+                    pixels,
+                    self.screen_w // 2 - (8 * len(line)),
+                    self.screen_h // 4 + (i * line_height) - 16,
+                    16 * len(line),
+                    30,
+                    button_color,
+                )
+                pixels.close()
+
+                self.screen.blit(text_surface, text_rect)
+
+        buttons = ["Start", "Selec Level", "Quit"]
+        draw_buttons(font, buttons, selected)
+        pygame.display.flip()
