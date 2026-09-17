@@ -14,9 +14,14 @@ class Ghost(Entity, ABC):
         pac_man: Player,
         config: GameConfig,
         escape: tuple = (0, 0),
-        speed: int = 2,
     ):
-        super().__init__(maze_grid, start_row, start_col, config, speed)
+        super().__init__(
+            maze_grid,
+            start_row,
+            start_col,
+            config,
+            speed=config.ghost_speed,
+        )
 
         self.last_pos = (start_row, start_col)
         self.target = (0, 0)

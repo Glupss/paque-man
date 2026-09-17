@@ -38,6 +38,11 @@ class Engine:
         self.pac_gum = PacGum(self.maze_grid, config, start_row, start_col)
         self.running = True
 
+        # init timer and chrono
+        self.start_ticks = pygame.time.get_ticks()
+        self.time_limit = config.time_limit
+        self.time_left = self.time_limit
+
     def _get_spawn_point(self) -> tuple[int, int]:
         center_col = self.config.m_width // 2
         center_row = self.config.m_height // 2
@@ -107,6 +112,11 @@ class Engine:
             for ghost in self.ghosts:
                 ghost.chose_target()
                 ghost.move_to_target()
+
+            sec_passed = (pygame.time.get_ticks() - self.start_ticks) // 1000
+            self.time_left = max(0, self.time_limit - sec_passed)
+            if self.time_left == 0:
+                self.running = False
 
             self._eat_pacgums()
 

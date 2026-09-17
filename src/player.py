@@ -19,6 +19,7 @@ class Player(Entity):
         )
 
         self.score = 0
+        self.lives = config.lives
 
     def update(self) -> None:
         row, col = self.get_grid_pos()

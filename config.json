@@ -4,12 +4,13 @@
     # --- Gameplay ---
     "highscore_filename": "highscores.json",
     "seed": 42,
-    "level_max_time": 90,
+    "time_limit": 120,
     "pacgum": 40,
     "point_per_pacgum": 10,
     "point_per_super_pacgum": 50,
     "point_per_ghost": 200,
 	"player_speed": 2.7,
+	"ghost_speed": 2.0,
 
     # --- Taille du labyrinthe ---
     "m_width": 24,

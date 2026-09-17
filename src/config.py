@@ -7,13 +7,14 @@ class GameConfig(BaseModel):
     # gameplay
     highscore_filename: str = "highscores.json"
     seed: int = 42
-    level_max_time: int = 90
+    time_limit: int = 90
     pacgum: int = 40
     lives: int = 3
     point_per_pacgum: int = 10
     point_per_super_pacgum: int = 50
     point_per_ghost: int = 200
     player_speed: int | float = 4
+    ghost_speed: int | float = 2
 
     # affichage
     m_height: int = 30
