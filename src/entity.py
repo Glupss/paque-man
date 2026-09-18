@@ -1,4 +1,5 @@
 from config import GameConfig
+import config
 
 
 class Entity:
@@ -13,19 +14,25 @@ class Entity:
         self.grid = maze_grid
         self.config = config
         self.speed = speed
+        self.spawn_row = start_row
+        self.spawn_col = start_col
 
         # pix coordinate
-        self.x = (start_col + config.padding) * config.box_size + (
-            config.box_size // 2
-        )
-        self.y = (
-            (start_row + config.padding) * config.box_size
-            + (config.box_size // 2)
-            + config.top_offset
-        )
+        self.x, self.y = self.grid_to_pix(start_row, start_col)
         self.dir = (0, 0)
         self.next_dir = (0, 0)
         self.grid_pos = (start_row, start_col)
+
+    def grid_to_pix(self, x, y) -> tuple[int, int]:
+        px = (y + self.config.padding) * self.config.box_size + (
+            self.config.box_size // 2
+        )
+        py = (
+            (x + self.config.padding) * self.config.box_size
+            + (self.config.box_size // 2)
+            + self.config.top_offset
+        )
+        return (px, py)
 
     def get_grid_pos(self) -> tuple[int, int]:
         col = int(
@@ -90,3 +97,9 @@ class Entity:
         if dx == 1 and (self.grid[row][col] & WALL_E):
             return False
         return True
+
+    def reset_pos(self) -> None:
+        self.x, self.y = self.grid_to_pix(self.spawn_row, self.spawn_col)
+        self.dir = (0, 0)
+        self.next_dir = (0, 0)
+        self.grid_pos = (self.spawn_row, self.spawn_col)

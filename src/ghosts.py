@@ -29,16 +29,6 @@ class Ghost(Entity, ABC):
         self.escape = escape
         self.flee = False
 
-    def grid_to_pix(self, x, y) -> tuple[int, int]:
-        config = self.config
-        px = (y + config.padding) * config.box_size + (config.box_size // 2)
-        py = (
-            (x + config.padding) * config.box_size
-            + (config.box_size // 2)
-            + config.top_offset
-        )
-        return (px, py)
-
     def move_to_target(self) -> None:
         if self.is_centered(*self.grid_pos):
             possible_tiles: list[tuple[int, int]] = []
@@ -94,6 +84,11 @@ class Ghost(Entity, ABC):
         self, tile: tuple[int, int], target: tuple[int, int]
     ) -> float:
         return dist(tile, target)
+
+    def reset_pos(self) -> None:
+        super().reset_pos()
+        self.last_pos = (self.spawn_row, self.spawn_col)
+        self.flee = False
 
     @abstractmethod
     def chose_target(self):
