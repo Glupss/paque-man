@@ -23,6 +23,8 @@ class Renderer:
         self.screen = pygame.display.set_mode((screen_w, screen_h))
 
         self._load_sprites(screen_w)
+        pygame.font.init()
+        self.font = pygame.font.Font(None, 40)
 
     def _load_sprites(self, screen_w: int) -> None:
         # logo PacMan
@@ -274,6 +276,7 @@ class Renderer:
             self.screen.blit(sprites[x], (tl_x[x], tl_y[x]))
 
     def render_frame(self, engine) -> None:
+        self.screen.fill((0, 0, 0))
         self.screen.blit(self.background_surface, (0, 0))
 
         # pacgums
@@ -284,5 +287,24 @@ class Renderer:
         # pacman
         self._draw_player(engine.player, engine.ghosts)
 
+        # text
+        self._draw_ui(engine)
         # send
         pygame.display.flip()
+
+    def _draw_ui(self, engine) -> None:
+        color = (255, 255, 0)
+        score_txt = self.font.render(
+            f"Score: {engine.player.score}", True, color
+        )
+        lives_txt = self.font.render(
+            f"Lives: {engine.player.lives}", True, color
+        )
+        time_txt = self.font.render(f"Time: {engine.time_left}", True, color)
+
+        self.screen.blit(score_txt, (20, 20))
+        self.screen.blit(lives_txt, (20, 60))
+        time_rect = time_txt.get_rect(
+            right=self.screen.get_width() - 20, top=20
+        )
+        self.screen.blit(time_txt, time_rect)
