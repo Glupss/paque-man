@@ -20,7 +20,9 @@ class Engine:
         self.player = Player(self.maze_grid, start_row, start_col, config)
 
         # init ghost
-        blinky = Blinky(self.maze_grid, self.player, start_row, start_col, config)
+        blinky = Blinky(
+            self.maze_grid, self.player, start_row, start_col, config
+        )
         self.ghosts = [
             blinky,
             Inky(
@@ -52,7 +54,10 @@ class Engine:
         for radius in range(self.config.m_width):
             for r in range(center_row - radius, center_row + radius + 1):
                 for c in range(center_col - radius, center_col + radius + 1):
-                    if 0 <= r < self.config.m_height and 0 <= c < self.config.m_width:
+                    if (
+                        0 <= r < self.config.m_height
+                        and 0 <= c < self.config.m_width
+                    ):
                         if self.maze_grid[r][c] != 15:
                             return c, r
         return center_col, center_row
@@ -94,14 +99,18 @@ class Engine:
 
         clock = pygame.time.Clock()
 
-        self.menu.main_menu(self.renderer)
+        if not self.menu.main_menu(self.renderer, self):
+            self.running = False
         while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        self.menu.pause(self.renderer, self)
+                        if not self.menu.pause(self.renderer, self):
+                            self.running = False
+                    elif event.key == pygame.K_q:
+                        self.running = False
                     elif event.key == pygame.K_SPACE:
                         for ghost in self.ghosts:
                             ghost.flee = not ghost.flee

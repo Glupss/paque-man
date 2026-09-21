@@ -23,6 +23,7 @@ class Renderer:
         self.screen_w = screen_w
         self.screen_h = screen_h
         self.background_surface = pygame.Surface((screen_w, screen_h))
+        self.background = pygame.Surface((screen_w, screen_h))
         self.menu_background = pygame.Surface((screen_w / 5, screen_h / 5))
         self.screen = pygame.display.set_mode((screen_w, screen_h))
 
@@ -30,7 +31,9 @@ class Renderer:
 
     def _load_sprites(self, screen_w: int) -> None:
         # logo PacMan
-        original_logo = pygame.image.load("./assets/Pacman_logo.png").convert_alpha()
+        original_logo = pygame.image.load(
+            "./assets/Pacman_logo.png"
+        ).convert_alpha()
         target_width = int(screen_w * 0.4)
         ratio = original_logo.get_height() / original_logo.get_width()
         target_height = int(target_width * ratio)
@@ -42,7 +45,9 @@ class Renderer:
 
         def load_and_scale(filepath):
             img = pygame.image.load(filepath).convert_alpha()
-            return pygame.transform.smoothscale(img, (player_size, player_size))
+            return pygame.transform.smoothscale(
+                img, (player_size, player_size)
+            )
 
         self.pacman_sprites = {
             "RIGHT": [
@@ -83,7 +88,9 @@ class Renderer:
         origin_x = self._box_px(box_col) + self.wall_thikness
         origin_y = self._box_py(box_row) + self.wall_thikness
         fill = self.box_size - (2 * self.wall_thikness)
-        self._draw_rectangle(surface, pixels, origin_x, origin_y, fill, fill, color)
+        self._draw_rectangle(
+            surface, pixels, origin_x, origin_y, fill, fill, color
+        )
 
     def _draw_wall_n(self, surface, pixels, box_row, box_col) -> None:
         origin_x = self._box_px(box_col) + self.wall_thikness
@@ -137,7 +144,9 @@ class Renderer:
             self.color_wall,
         )
 
-    def _draw_box_walls(self, surface, pixels, box_row, box_col, bitmask) -> None:
+    def _draw_box_walls(
+        self, surface, pixels, box_row, box_col, bitmask
+    ) -> None:
         WALL_N = 1
         WALL_E = 2
         WALL_S = 4
@@ -154,7 +163,10 @@ class Renderer:
     def _draw_rectangle(self, surface, pixels, x, y, width, height, color):
         for i in range(x, x + width):
             for j in range(y, y + height):
-                if 0 <= i < surface.get_width() and 0 <= j < surface.get_height():
+                if (
+                    0 <= i < surface.get_width()
+                    and 0 <= j < surface.get_height()
+                ):
                     pixels[i, j] = color
 
     def _draw_circle(
@@ -169,7 +181,10 @@ class Renderer:
         for x in range(center_x - radius, center_x + radius + 1):
             for y in range(center_y - radius, center_y + radius + 1):
                 if (x - center_x) ** 2 + (y - center_y) ** 2 <= radius**2:
-                    if 0 <= x < surface.get_width() and 0 <= y < surface.get_height():
+                    if (
+                        0 <= x < surface.get_width()
+                        and 0 <= y < surface.get_height()
+                    ):
                         pixels[x, y] = color
 
     def create_static_background(self, maze_grid: list[list[int]]) -> None:
@@ -179,7 +194,9 @@ class Renderer:
                 color_box = (0, 0, 0)
                 if maze_grid[row][col] == 15:
                     color_box = (255, 0, 0)
-                self._draw_box(self.background_surface, pixels, row, col, color_box)
+                self._draw_box(
+                    self.background_surface, pixels, row, col, color_box
+                )
                 self._draw_box_walls(
                     self.background_surface,
                     pixels,
@@ -200,7 +217,11 @@ class Renderer:
                 if val in (1, 2):
                     x = self._box_px(col) + (self.box_size // 2)
                     y = self._box_py(row) + (self.box_size // 2)
-                    radius = self.pacgum_radius if val == 1 else self.pacgum_radius * 2
+                    radius = (
+                        self.pacgum_radius
+                        if val == 1
+                        else self.pacgum_radius * 2
+                    )
                     self._draw_circle(
                         self.screen, pixels, x, y, radius, self.color_pacgum
                     )
@@ -271,18 +292,62 @@ class Renderer:
         # send
         pygame.display.flip()
 
-    def show_pause_menu(self, engine) -> None:
+    def show_main_menu(self, selected: int):
+        font = pygame.font.SysFont(None, 36)
 
-        def draw_text(font, text):
+        def draw_buttons(font, text: list[str], selected: int):
             line_height = 36
-            for i, line in enumerate(text.split("\n")):
+            for i, line in enumerate(text):
+                if i == selected:
+                    button_color = (255, 255, 255)
+                    text_color = (0, 0, 0)
+                else:
+                    button_color = (100, 100, 100)
+                    text_color = (255, 255, 255)
+                text_surface = font.render(
+                    line,
+                    True,
+                    text_color,
+                )
+                text_rect = text_surface.get_rect(
+                    center=(
+                        self.screen_w // 2,
+                        self.screen_h // 4 + (i * line_height),
+                    )
+                )
+                pixels = pygame.PixelArray(self.screen)
+                self._draw_rectangle(
+                    self.screen,
+                    pixels,
+                    self.screen_w // 2 - (8 * len(line)),
+                    self.screen_h // 4 + (i * line_height) - 16,
+                    16 * len(line),
+                    30,
+                    button_color,
+                )
+                pixels.close()
+
+                self.screen.blit(text_surface, text_rect)
+
+        buttons = ["Start", "View Highscores", "Instructions", "Exit"]
+        draw_buttons(font, buttons, selected)
+        pygame.display.flip()
+
+    def show_text_interface(self, text, size) -> None:
+
+        def draw_text(font, text_):
+            line_height = size
+            for i, line in enumerate(text_):
                 text_surface = font.render(
                     line,
                     True,
                     self.color_text,
                 )
                 text_rect = text_surface.get_rect(
-                    center=(self.screen_w // 2, self.screen_h // 4 + (i * line_height))
+                    center=(
+                        self.screen_w // 2,
+                        self.screen_h // 4 + (i * line_height),
+                    )
                 )
                 self.screen.blit(text_surface, text_rect)
 
@@ -311,48 +376,13 @@ class Renderer:
             (0, 0, 0),
         )
         pixels.close()
-        font = pygame.font.SysFont(None, 36)
+        font = pygame.font.SysFont(None, size)
         draw_text(
             font,
-            f"Game Paused\n\n\n Score: {engine.player.score}\n\n\n "
-            + "press [ESCAPE] to resume",
+            text,
         )
         pygame.display.flip()
 
-    def show_main_menu(self, selected: int):
-        font = pygame.font.SysFont(None, 36)
-
-        def draw_buttons(font, text: list[str], selected: int):
-            line_height = 36
-            for i, line in enumerate(text):
-                if i == selected:
-                    button_color = (255, 255, 255)
-                    text_color = (0, 0, 0)
-                else:
-                    button_color = (100, 100, 100)
-                    text_color = (255, 255, 255)
-                text_surface = font.render(
-                    line,
-                    True,
-                    text_color,
-                )
-                text_rect = text_surface.get_rect(
-                    center=(self.screen_w // 2, self.screen_h // 4 + (i * line_height))
-                )
-                pixels = pygame.PixelArray(self.screen)
-                self._draw_rectangle(
-                    self.screen,
-                    pixels,
-                    self.screen_w // 2 - (8 * len(line)),
-                    self.screen_h // 4 + (i * line_height) - 16,
-                    16 * len(line),
-                    30,
-                    button_color,
-                )
-                pixels.close()
-
-                self.screen.blit(text_surface, text_rect)
-
-        buttons = ["Start", "Selec Level", "Quit"]
-        draw_buttons(font, buttons, selected)
+    def clean(self):
+        self.screen.blit(self.background, (0, 0))
         pygame.display.flip()

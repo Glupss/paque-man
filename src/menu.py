@@ -3,24 +3,38 @@ from renderer import Renderer
 
 
 class Menu:
-    def pause(self, renderer: Renderer, engine):
+    def pause(self, renderer: Renderer, engine) -> bool:
+        pause_txt = [
+            "Game Paused",
+            "",
+            "",
+            f"Score: {engine.player.score}",
+            "",
+            "",
+            "press [ESCAPE] to resume",
+            "",
+            "",
+            "press [Q] to QUIT",
+        ]
         while 1:
-            renderer.show_pause_menu(engine)
+            renderer.show_text_interface(pause_txt, 36)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
+                    return False
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        return
+                        return True
+                    if event.key == pygame.K_q:
+                        return False
 
-    def main_menu(self, renderer: Renderer):
+    def main_menu(self, renderer: Renderer, engine) -> bool:
         index = 0
-        max_index = 2
+        max_index = 3
         while 1:
             renderer.show_main_menu(index)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
+                    return False
                 if event.type == pygame.KEYDOWN:
                     match event.key:
                         case pygame.K_w | pygame.K_UP:
@@ -33,17 +47,39 @@ class Menu:
                                 index = 0
                             else:
                                 index += 1
-                        case pygame.K_ESCAPE:
-                            return
+                        case pygame.K_ESCAPE | pygame.K_q:
+                            return False
                         case pygame.K_RETURN:
-                            self.chose_button(index)
-                            return
+                            if index == max_index:
+                                return False
+                            elif index == max_index - 1:
+                                if not self.show_instructions(renderer):
+                                    return False
+                            elif index == max_index - 2:
+                                print("highscores")
+                            else:
+                                return True
 
-    def chose_button(self, index: int):
-        match index:
-            case 0:
-                return
-            case 1:
-                return
-            case 2:
-                pygame.quit()
+    def show_instructions(self, renderer) -> bool:
+        while 1:
+            instructions = [
+                "Instructions:",
+                "",
+                "Collect all Pac-Gums to win",
+                "",
+                "If a ghost eats you the game ends",
+                "",
+                "Eat a Mega-Gum to eat the ghosts",
+                "",
+                "Use WASD or ARROWS to move",
+            ]
+            renderer.show_text_interface(instructions, 24)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        renderer.clean()
+                        return True
+                    if event.key == pygame.K_q:
+                        return False
