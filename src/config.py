@@ -30,15 +30,14 @@ class GameConfig(BaseModel):
     color_ghost: tuple[int, int, int] = (255, 0, 255)
     color_wall: tuple[int, int, int] = (33, 50, 197)
     color_pacgum: tuple[int, int, int] = (255, 184, 255)
+    color_text: tuple[int, int, int] = (255, 255, 255)
 
     @staticmethod
     def load_config(filepath: str) -> GameConfig:
         try:
             with open(filepath, "r", encoding="utf-8") as f:
                 clean_line = [
-                    line
-                    for line in f.readlines()
-                    if not line.strip().startswith("#")
+                    line for line in f.readlines() if not line.strip().startswith("#")
                 ]
                 clean_json_string = "".join(clean_line)
 

@@ -24,5 +24,6 @@
     
     # Couleurs (R, G, B)
     "color_wall": [33, 50, 197],
-    "color_pacgum": [255, 184, 255]
+    "color_pacgum": [255, 184, 255],
+    "color_text": [255, 255, 255]
 }
