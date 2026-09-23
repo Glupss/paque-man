@@ -1,5 +1,6 @@
 import pygame
 from renderer import Renderer
+import json
 
 
 class Menu:
@@ -56,7 +57,8 @@ class Menu:
                                 if not self.show_instructions(renderer):
                                     return False
                             elif index == max_index - 2:
-                                print("highscores")
+                                if not self.show_highscore(renderer):
+                                    return False
                             else:
                                 return True
 
@@ -73,7 +75,7 @@ class Menu:
                 "",
                 "Use WASD or ARROWS to move",
             ]
-            renderer.show_text_interface(instructions, 24)
+            renderer.show_text_interface(instructions, 36)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return False
@@ -83,3 +85,64 @@ class Menu:
                         return True
                     if event.key == pygame.K_q:
                         return False
+
+    def show_highscore(self, renderer) -> bool:
+        try:
+            with open("highscores.json", "r") as f:
+                scores = json.load(f)
+        except Exception:
+            scores = {}
+        sorted_scores = dict(
+            sorted(scores.items(), key=lambda item: item[1], reverse=True)[:10]
+        )
+        scores_final = ["HIGHSCORES", "", ""]
+        tmp = [f"{n}:           {s}" for n, s in sorted_scores.items()]
+        scores_final.extend(tmp)
+        while 1:
+            renderer.show_text_interface(scores_final, 36)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        renderer.clean()
+                        return True
+                    if event.key == pygame.K_q:
+                        return False
+
+    def add_score(self, renderer, score) -> str:
+        pressed = [".", ".", "."]
+        count = 0
+        while 1:
+            end_msg = [
+                "GAME OVER",
+                "",
+                "",
+                f"Score : {score}",
+                "",
+                "",
+                "ENTER YOUR NAME:",
+                "",
+                "",
+                f"{''.join(pressed)}",
+            ]
+            renderer.show_text_interface(end_msg, 48)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return ""
+                if event.type == pygame.KEYDOWN:
+                    if count < 3:
+                        key = pygame.key.name(event.key)
+                        if len(key) == 1 and key.isalpha():
+                            pressed[count] = pygame.key.name(
+                                event.key
+                            ).capitalize()
+                            count += 1
+                    else:
+                        ret = "".join(pressed)
+                        if event.key == pygame.K_ESCAPE:
+                            return ret
+                        if event.key == pygame.K_RETURN:
+                            return ret
+                        if event.key == pygame.K_q:
+                            return ret

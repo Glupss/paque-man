@@ -6,6 +6,7 @@ from renderer import Renderer
 from ghosts import Blinky, Inky, Pinky, Clyde
 from menu import Menu
 
+import json
 import pygame
 import math
 
@@ -129,6 +130,9 @@ class Engine:
                 else:
                     self.player.lives -= 1
                     if self.player.lives <= 0:
+                        name = self.menu.add_score(self.renderer, self.player.score)
+                        if name:
+                            self.save_score(name, self.player.score)
                         self.running = False
                         print("Game Over")
                     else:
@@ -185,6 +189,18 @@ class Engine:
             self.renderer.render_frame(self)
             clock.tick(60)
         pygame.quit()
+
+    def save_score(self, name, score):
+        try:
+            with open("highscores.json", "r") as f:
+                scores = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            scores = {}  # Fallback if file doesn't exist or is empty
+
+        scores[name] = score
+        sorted_scores = dict(sorted(scores.items(), key=lambda item: item[1], reverse=True)[:10])
+        with open("highscores.json", "w") as f:
+            json.dump(sorted_scores, f, indent=4)
 
 
 if __name__ == "__main__":
