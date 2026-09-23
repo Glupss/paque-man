@@ -338,15 +338,22 @@ class Renderer:
         draw_buttons(font, buttons, selected)
         pygame.display.flip()
 
-    def show_text_interface(self, text, size) -> None:
+    def show_text_interface(self, text, size, selected) -> None:
 
         def draw_text(font, text_):
             line_height = size
             for i, line in enumerate(text_):
+                if i == selected:
+                    button_color = (255, 255, 255)
+                    text_color = (0, 0, 0)
+                else:
+                    button_color = (100, 100, 100)
+                    text_color = (255, 255, 255)
+
                 text_surface = font.render(
                     line,
                     True,
-                    self.color_text,
+                    text_color,
                 )
                 text_rect = text_surface.get_rect(
                     center=(
@@ -354,6 +361,17 @@ class Renderer:
                         self.screen_h // 4 + (i * line_height),
                     )
                 )
+                pixels = pygame.PixelArray(self.screen)
+                self._draw_rectangle(
+                    self.screen,
+                    pixels,
+                    self.screen_w // 2 - (8 * len(line)),
+                    self.screen_h // 4 + (i * line_height) - 16,
+                    16 * len(line),
+                    30,
+                    button_color,
+                )
+                pixels.close()
                 self.screen.blit(text_surface, text_rect)
 
         pixels = pygame.PixelArray(self.screen)
@@ -391,6 +409,7 @@ class Renderer:
     def clean(self):
         self.screen.blit(self.background, (0, 0))
         pygame.display.flip()
+
     def _draw_ui(self, engine) -> None:
         color = (255, 255, 0)
         score_txt = self.font.render(

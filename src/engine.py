@@ -49,7 +49,9 @@ class Engine:
                 config,
             ),
         ]
-
+        self.inf_life = False
+        self.inf_time = False
+        self.inf_gums = False
         self.pac_gum = PacGum(self.maze_grid, config, start_row, start_col)
         self.running = True
 
@@ -124,20 +126,27 @@ class Engine:
                 (self.player.x, self.player.y), (ghost.x, ghost.y)
             )
             if distance < threshold:
-                if ghost.flee:
+                if self.inf_gums:
                     self.player.score += self.config.point_per_ghost
                     ghost.reset_pos()
                 else:
-                    self.player.lives -= 1
-                    if self.player.lives <= 0:
-                        name = self.menu.add_score(self.renderer, self.player.score)
-                        if name:
-                            self.save_score(name, self.player.score)
-                        self.running = False
-                        print("Game Over")
+                    if ghost.flee:
+                        self.player.score += self.config.point_per_ghost
+                        ghost.reset_pos()
                     else:
-                        self._reset_all_pos()
-                    break
+                        if not self.inf_life:
+                            self.player.lives -= 1
+                            if self.player.lives <= 0:
+                                name = self.menu.add_score(self.renderer, self.player.score)
+                                if name:
+                                    self.save_score(name, self.player.score)
+                                self.running = False
+                                print("Game Over")
+                            else:
+                                self._reset_all_pos()
+                            break
+                        else:
+                            self._reset_all_pos()
 
     def run(self):
         self.renderer.create_static_background(self.maze_grid)
@@ -153,6 +162,10 @@ class Engine:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         if not self.menu.pause(self.renderer, self):
+                            self.running = False
+                    elif event.key == pygame.K_g:
+                        check,self.inf_life,self.inf_time,self.inf_gums = self.menu.powers(self.renderer,self)
+                        if not check:
                             self.running = False
                     elif event.key == pygame.K_q:
                         self.running = False
@@ -177,11 +190,12 @@ class Engine:
             for ghost in self.ghosts:
                 ghost.chose_target()
                 ghost.move_to_target()
-
+            
             sec_passed = (pygame.time.get_ticks() - self.start_ticks) // 1000
-            self.time_left = max(0, self.time_limit - sec_passed)
-            if self.time_left == 0:
-                self.running = False
+            if not self.inf_time:
+                self.time_left = max(0, self.time_limit - sec_passed)
+                if self.time_left == 0:
+                    self.running = False
 
             self._eat_pacgums()
             self._check_collisions()

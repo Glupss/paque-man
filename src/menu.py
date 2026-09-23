@@ -18,7 +18,7 @@ class Menu:
             "press [Q] to QUIT",
         ]
         while 1:
-            renderer.show_text_interface(pause_txt, 36)
+            renderer.show_text_interface(pause_txt, 36, -1)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return False
@@ -99,7 +99,7 @@ class Menu:
         tmp = [f"{n}:           {s}" for n, s in sorted_scores.items()]
         scores_final.extend(tmp)
         while 1:
-            renderer.show_text_interface(scores_final, 36)
+            renderer.show_text_interface(scores_final, 36, -1)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return False
@@ -126,7 +126,7 @@ class Menu:
                 "",
                 f"{''.join(pressed)}",
             ]
-            renderer.show_text_interface(end_msg, 48)
+            renderer.show_text_interface(end_msg, 48, -1)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return ""
@@ -146,3 +146,52 @@ class Menu:
                             return ret
                         if event.key == pygame.K_q:
                             return ret
+
+    def powers(self, renderer, engine) -> tuple[bool, bool, bool, bool]:
+        index = 0
+        max_index = 2
+        inf_life = engine.inf_life
+        inf_time = engine.inf_time
+        inf_gum = engine.inf_gums
+        while 1:
+            powers_ = [
+                "Powers:",
+                "",
+                f"[{'X' if inf_life else '_'}] INFINITE LIVES",
+                "",
+                f"[{'X' if inf_time else '_'}] INFINITE TIME",
+                "",
+                f"[{'X' if inf_gum else '_'}] PERMANENT SUPER PAC-GUM",
+                "",
+                "Press [ESCAPE] to resume",
+            ]
+            renderer.show_text_interface(powers_, 36, index * 2 + 2)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return (False, inf_life, inf_time, inf_gum)
+                if event.type == pygame.KEYDOWN:
+                    match event.key:
+                        case pygame.K_w | pygame.K_UP:
+                            if index == 0:
+                                index = max_index
+                            else:
+                                index -= 1
+                        case pygame.K_s | pygame.K_DOWN:
+                            if index == max_index:
+                                index = 0
+                            else:
+                                index += 1
+                        case pygame.K_ESCAPE:
+                            renderer.clean()
+                            return (True, inf_life, inf_time, inf_gum)
+                        case pygame.K_q:
+                            return (False, inf_life, inf_time, inf_gum)
+                        case pygame.K_RETURN:
+                            if index == max_index:
+                                inf_gum = not inf_gum
+                            elif index == max_index - 1:
+                                inf_time = not inf_time
+                            elif index == max_index - 2:
+                                inf_life = not inf_life
+
+        return (False, False, False, False)
