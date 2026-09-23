@@ -75,7 +75,7 @@ class Menu:
                 "",
                 "Use WASD or ARROWS to move",
             ]
-            renderer.show_text_interface(instructions, 24)
+            renderer.show_text_interface(instructions, 36)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return False
